@@ -1,0 +1,934 @@
+{
+  "entities": {
+    "Branch": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Branch",
+      "type": "object",
+      "description": "Represents a physical store location where sales and operations occur.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Branch entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the branch."
+        },
+        "address": {
+          "type": "string",
+          "description": "The physical address of the branch."
+        },
+        "phone": {
+          "type": "string",
+          "description": "The contact phone number for the branch."
+        },
+        "email": {
+          "type": "string",
+          "description": "The contact email address for the branch.",
+          "format": "email"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the branch record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the branch record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "address",
+        "phone",
+        "email",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
+      "type": "object",
+      "description": "Represents an employee or user of the POS system with specific roles and branch assignments. Authentication handled externally.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity (e.g., matching Supabase Auth user ID)."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "The first name of the user."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The last name of the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the user.",
+          "format": "email"
+        },
+        "roleId": {
+          "type": "string",
+          "description": "Reference to the Role assigned to this user. (Relationship: Role 1:N User)"
+        },
+        "branchId": {
+          "type": "string",
+          "description": "Reference to the Branch where this user primarily works. (Relationship: Branch 1:N User)"
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the user record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the user record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "email",
+        "roleId",
+        "branchId",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Role": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Role",
+      "type": "object",
+      "description": "Defines the permissions and type of access for users within the POS system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Role entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the role (e.g., 'Admin', 'Cashier')."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the role's responsibilities and privileges."
+        },
+        "permissions": {
+          "type": "array",
+          "description": "A list of permission strings associated with this role (e.g., 'manage_products', 'process_sales', 'view_reports').",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "permissions"
+      ]
+    },
+    "Category": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Category",
+      "type": "object",
+      "description": "Organizes products into logical groups for easier management and reporting.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Category entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the product category (e.g., 'Electronics', 'Apparel')."
+        },
+        "description": {
+          "type": "string",
+          "description": "A brief description of the category."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the category record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the category record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "description",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Product": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Product",
+      "type": "object",
+      "description": "Represents an individual item available for sale in the POS system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Product entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the product."
+        },
+        "description": {
+          "type": "string",
+          "description": "A detailed description of the product."
+        },
+        "price": {
+          "type": "number",
+          "description": "The selling price of the product."
+        },
+        "sku": {
+          "type": "string",
+          "description": "The Stock Keeping Unit (SKU) for inventory management."
+        },
+        "barcode": {
+          "type": "string",
+          "description": "The barcode associated with the product for scanning."
+        },
+        "categoryId": {
+          "type": "string",
+          "description": "Reference to the Category this product belongs to. (Relationship: Category 1:N Product)"
+        },
+        "stockQuantity": {
+          "type": "number",
+          "description": "The current quantity of the product in stock."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "An optional URL to an image of the product.",
+          "format": "uri"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates if the product is currently available for sale."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the product record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the product record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "price",
+        "sku",
+        "barcode",
+        "categoryId",
+        "stockQuantity",
+        "isActive",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Customer": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Customer",
+      "type": "object",
+      "description": "Stores information about customers for loyalty programs and personalized services.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Customer entity."
+        },
+        "firstName": {
+          "type": "string",
+          "description": "The first name of the customer."
+        },
+        "lastName": {
+          "type": "string",
+          "description": "The last name of the customer."
+        },
+        "email": {
+          "type": "string",
+          "description": "The email address of the customer.",
+          "format": "email"
+        },
+        "phone": {
+          "type": "string",
+          "description": "The phone number of the customer."
+        },
+        "address": {
+          "type": "string",
+          "description": "The primary address of the customer."
+        },
+        "loyaltyPoints": {
+          "type": "number",
+          "description": "The current loyalty points accumulated by the customer."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the customer record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the customer record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "firstName",
+        "lastName",
+        "email",
+        "phone",
+        "address",
+        "loyaltyPoints",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Discount": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Discount",
+      "type": "object",
+      "description": "Defines promotional offers that can be applied to products or the total bill.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Discount entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the discount (e.g., 'Holiday Sale', '20% Off')."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the discount's terms and conditions."
+        },
+        "type": {
+          "type": "string",
+          "description": "The type of discount, either 'percentage' or 'fixed_amount'."
+        },
+        "value": {
+          "type": "number",
+          "description": "The value of the discount (e.g., 0.10 for 10% or 5 for $5 off)."
+        },
+        "appliesTo": {
+          "type": "string",
+          "description": "Indicates where the discount applies: 'total_bill', 'product', or 'category'."
+        },
+        "targetId": {
+          "type": "string",
+          "description": "Optional reference ID if the discount applies to a specific product or category. (Relationship: Product/Category 1:N Discount)"
+        },
+        "minimumPurchaseAmount": {
+          "type": "number",
+          "description": "Optional minimum purchase amount required to apply the discount."
+        },
+        "startDate": {
+          "type": "string",
+          "description": "The date and time when the discount becomes active.",
+          "format": "date-time"
+        },
+        "endDate": {
+          "type": "string",
+          "description": "The date and time when the discount expires.",
+          "format": "date-time"
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates if the discount is currently active and can be applied."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the discount record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the discount record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "type",
+        "value",
+        "appliesTo",
+        "startDate",
+        "endDate",
+        "isActive",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Tax": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Tax",
+      "type": "object",
+      "description": "Defines tax rates applicable to sales transactions.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Tax entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the tax (e.g., 'Sales Tax', 'VAT')."
+        },
+        "rate": {
+          "type": "number",
+          "description": "The tax rate as a decimal (e.g., 0.07 for 7%)."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the tax."
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Indicates if the tax rate is currently active."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the tax record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the tax record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "rate",
+        "description",
+        "isActive",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Order": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Order",
+      "type": "object",
+      "description": "Represents a single completed or pending sales transaction.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Order entity."
+        },
+        "customerId": {
+          "type": "string",
+          "description": "Optional reference to the Customer who made the purchase. (Relationship: Customer 1:N Order)"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User (cashier) who processed the order. (Relationship: User 1:N Order)"
+        },
+        "branchId": {
+          "type": "string",
+          "description": "Reference to the Branch where the order was placed. (Relationship: Branch 1:N Order)"
+        },
+        "orderDate": {
+          "type": "string",
+          "description": "The date and time when the order was placed.",
+          "format": "date-time"
+        },
+        "subtotalAmount": {
+          "type": "number",
+          "description": "The sum of all item prices before discounts and taxes."
+        },
+        "discountAmount": {
+          "type": "number",
+          "description": "The total discount applied to the entire order."
+        },
+        "taxAmount": {
+          "type": "number",
+          "description": "The total tax applied to the entire order."
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "The final amount paid by the customer after all discounts and taxes."
+        },
+        "paymentMethod": {
+          "type": "string",
+          "description": "The method used for payment (e.g., 'cash', 'credit_card', 'mobile_pay')."
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the order (e.g., 'completed', 'pending', 'cancelled', 'refunded')."
+        },
+        "isOfflineSale": {
+          "type": "boolean",
+          "description": "Indicates if this sale was initially recorded while offline."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the order record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the order record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "branchId",
+        "orderDate",
+        "subtotalAmount",
+        "discountAmount",
+        "taxAmount",
+        "totalAmount",
+        "paymentMethod",
+        "status",
+        "isOfflineSale",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "OrderItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OrderItem",
+      "type": "object",
+      "description": "Represents a single product line item within an order.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the OrderItem entity."
+        },
+        "orderId": {
+          "type": "string",
+          "description": "Reference to the Order this item belongs to. (Relationship: Order 1:N OrderItem)"
+        },
+        "productId": {
+          "type": "string",
+          "description": "Reference to the Product purchased. (Relationship: Product 1:N OrderItem)"
+        },
+        "quantity": {
+          "type": "number",
+          "description": "The quantity of the product purchased in this line item."
+        },
+        "unitPrice": {
+          "type": "number",
+          "description": "The price of a single unit of the product at the time of purchase."
+        },
+        "itemDiscountAmount": {
+          "type": "number",
+          "description": "The total discount applied specifically to this item (before prorating total order discount)."
+        },
+        "itemTaxAmount": {
+          "type": "number",
+          "description": "The total tax applied specifically to this item (before prorating total order tax)."
+        },
+        "subtotal": {
+          "type": "number",
+          "description": "The total cost for this line item (quantity * unitPrice - itemDiscountAmount + itemTaxAmount)."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the order item record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the order item record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "orderId",
+        "productId",
+        "quantity",
+        "unitPrice",
+        "itemDiscountAmount",
+        "itemTaxAmount",
+        "subtotal",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "InventoryTransaction": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "InventoryTransaction",
+      "type": "object",
+      "description": "Records all movements and adjustments of product stock for detailed inventory tracking.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the InventoryTransaction entity."
+        },
+        "productId": {
+          "type": "string",
+          "description": "Reference to the Product affected by this transaction. (Relationship: Product 1:N InventoryTransaction)"
+        },
+        "branchId": {
+          "type": "string",
+          "description": "Reference to the Branch where the inventory transaction occurred. (Relationship: Branch 1:N InventoryTransaction)"
+        },
+        "transactionType": {
+          "type": "string",
+          "description": "The type of inventory movement (e.g., 'sale', 'restock', 'return', 'adjustment')."
+        },
+        "quantityChange": {
+          "type": "number",
+          "description": "The change in quantity (positive for additions, negative for deductions)."
+        },
+        "currentStockQuantity": {
+          "type": "number",
+          "description": "The stock level of the product *after* this transaction."
+        },
+        "transactionDate": {
+          "type": "string",
+          "description": "The date and time when the inventory transaction occurred.",
+          "format": "date-time"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Optional reference to the User who performed or initiated the transaction. (Relationship: User 1:N InventoryTransaction)"
+        },
+        "referenceOrderId": {
+          "type": "string",
+          "description": "Optional reference to an Order if this transaction is linked to a sale or return. (Relationship: Order 1:N InventoryTransaction)"
+        },
+        "description": {
+          "type": "string",
+          "description": "An optional detailed description or reason for the transaction."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the inventory transaction record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the inventory transaction record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "productId",
+        "branchId",
+        "transactionType",
+        "quantityChange",
+        "currentStockQuantity",
+        "transactionDate",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "ReceiptConfiguration": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ReceiptConfiguration",
+      "type": "object",
+      "description": "Stores customizable settings for thermal receipts for a specific branch.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the ReceiptConfiguration entity."
+        },
+        "branchId": {
+          "type": "string",
+          "description": "Reference to the Branch this receipt configuration belongs to. (Relationship: Branch 1:1 ReceiptConfiguration)"
+        },
+        "headerText": {
+          "type": "string",
+          "description": "Text content for the receipt header (e.g., store name, address, phone)."
+        },
+        "footerText": {
+          "type": "string",
+          "description": "Text content for the receipt footer (e.g., 'Thank you' message, return policy)."
+        },
+        "fontSize": {
+          "type": "number",
+          "description": "The font size for the receipt text (e.g., in points or pixels)."
+        },
+        "contrast": {
+          "type": "number",
+          "description": "The contrast setting for the receipt printout (e.g., 0-100)."
+        },
+        "customMargins": {
+          "type": "string",
+          "description": "Custom margin settings for the receipt (e.g., 'top:10px;right:5px;')."
+        },
+        "previewEnabled": {
+          "type": "boolean",
+          "description": "A flag indicating if the receipt preview feature is enabled for this configuration."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp when the receipt configuration record was created.",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "description": "Timestamp when the receipt configuration record was last updated.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "branchId",
+        "headerText",
+        "footerText",
+        "fontSize",
+        "contrast",
+        "customMargins",
+        "previewEnabled",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Collection for user profiles. Each document represents a user, storing their details including their assigned branch and role. Users can read/write their own profile; administrators can manage all. Auth rules will fetch the requesting user's document for their branchId and roleId.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique ID of the user, matching request.auth.uid."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles/{roleId}",
+        "definition": {
+          "entityName": "Role",
+          "schema": {
+            "$ref": "#/backend/entities/Role"
+          },
+          "description": "Global collection for defining system roles and their permissions. Only accessible by administrators.",
+          "params": [
+            {
+              "name": "roleId",
+              "description": "The unique ID of the role."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/branches/{branchId}",
+        "definition": {
+          "entityName": "Branch",
+          "schema": {
+            "$ref": "#/backend/entities/Branch"
+          },
+          "description": "Collection for physical store branches. Accessible by administrators, and by users assigned to that specific branch (read-only for non-admins).",
+          "params": [
+            {
+              "name": "branchId",
+              "description": "The unique ID of the branch."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/customers/{customerId}",
+        "definition": {
+          "entityName": "Customer",
+          "schema": {
+            "$ref": "#/backend/entities/Customer"
+          },
+          "description": "Global collection for customer profiles. Accessible by cashiers and administrators across all branches for loyalty programs and sales.",
+          "params": [
+            {
+              "name": "customerId",
+              "description": "The unique ID of the customer."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/discounts/{discountId}",
+        "definition": {
+          "entityName": "Discount",
+          "schema": {
+            "$ref": "#/backend/entities/Discount"
+          },
+          "description": "Global collection for defining promotional discounts. Only accessible by administrators for management, read-only for cashiers during sales.",
+          "params": [
+            {
+              "name": "discountId",
+              "description": "The unique ID of the discount."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/branches/{branchId}/categories/{categoryId}",
+        "definition": {
+          "entityName": "Category",
+          "schema": {
+            "$ref": "#/backend/entities/Category"
+          },
+          "description": "Subcollection for product categories specific to a branch. Enhances structural segregation and allows branch-specific product organization. Accessible by administrators of the branch; read-only for cashiers.",
+          "params": [
+            {
+              "name": "branchId",
+              "description": "The unique ID of the parent branch."
+            },
+            {
+              "name": "categoryId",
+              "description": "The unique ID of the category within the branch."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/branches/{branchId}/products/{productId}",
+        "definition": {
+          "entityName": "Product",
+          "schema": {
+            "$ref": "#/backend/entities/Product"
+          },
+          "description": "Subcollection for products available at a specific branch. The 'stockQuantity' field here is branch-specific. Accessible by administrators of the branch for management; read-only for cashiers for sales operations. The 'categoryId' refers to a category within the same branch.",
+          "params": [
+            {
+              "name": "branchId",
+              "description": "The unique ID of the parent branch."
+            },
+            {
+              "name": "productId",
+              "description": "The unique ID of the product within the branch."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/branches/{branchId}/orders/{orderId}",
+        "definition": {
+          "entityName": "Order",
+          "schema": {
+            "$ref": "#/backend/entities/Order"
+          },
+          "description": "Subcollection for sales orders processed at a specific branch. Includes denormalized 'branchId' (matching path) and 'userId' of the cashier. Accessible by administrators of the branch and the cashier who created the order.",
+          "params": [
+            {
+              "name": "branchId",
+              "description": "The unique ID of the branch where the order was placed."
+            },
+            {
+              "name": "orderId",
+              "description": "The unique ID of the order."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/branches/{branchId}/orders/{orderId}/orderItems/{orderItemId}",
+        "definition": {
+          "entityName": "OrderItem",
+          "schema": {
+            "$ref": "#/backend/entities/OrderItem"
+          },
+          "description": "Subcollection for individual product items within a specific order. Includes denormalized 'branchId' and 'userId' (from parent Order) for authorization independence. Access is implicitly controlled by the parent order's access rules, with additional independent checks possible via denormalized fields.",
+          "params": [
+            {
+              "name": "branchId",
+              "description": "The unique ID of the parent branch."
+            },
+            {
+              "name": "orderId",
+              "description": "The unique ID of the parent order."
+            },
+            {
+              "name": "orderItemId",
+              "description": "The unique ID of the order item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/branches/{branchId}/taxes/{taxId}",
+        "definition": {
+          "entityName": "Tax",
+          "schema": {
+            "$ref": "#/backend/entities/Tax"
+          },
+          "description": "Subcollection for tax rates specific to a branch. The 'branchId' in the document matches the path. Only accessible by administrators of the branch for management; read-only for cashiers.",
+          "params": [
+            {
+              "name": "branchId",
+              "description": "The unique ID of the parent branch."
+            },
+            {
+              "name": "taxId",
+              "description": "The unique ID of the tax rate."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/branches/{branchId}/inventoryTransactions/{transactionId}",
+        "definition": {
+          "entityName": "InventoryTransaction",
+          "schema": {
+            "$ref": "#/backend/entities/InventoryTransaction"
+          },
+          "description": "Subcollection for inventory movements and adjustments occurring at a specific branch. Includes 'branchId' (matching path), 'productId' (referencing a branch-specific product), and 'userId' of the performing user for authorization independence. Accessible by administrators and authorized users of the branch.",
+          "params": [
+            {
+              "name": "branchId",
+              "description": "The unique ID of the parent branch."
+            },
+            {
+              "name": "transactionId",
+              "description": "The unique ID of the inventory transaction."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/branches/{branchId}/receiptConfiguration",
+        "definition": {
+          "entityName": "ReceiptConfiguration",
+          "schema": {
+            "$ref": "#/backend/entities/ReceiptConfiguration"
+          },
+          "description": "A single document within a branch collection for storing customizable thermal receipt settings. The 'branchId' in the document matches the path, ensuring branch-specific configuration. Only accessible by administrators of the branch.",
+          "params": [
+            {
+              "name": "branchId",
+              "description": "The unique ID of the parent branch."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "This Firestore structure is designed to support a multi-branch Point of Sale (POS) system, prioritizing authorization independence, clear security rules, and scalability, as mandated by the core design principles.\n\n### Authorization Independence (CRITICAL)\nTo achieve authorization independence and eliminate the need for `get()` operations on parent documents for authorization checks (Mandate A), specific denormalization strategies have been applied:\n1.  **`OrderItem` Denormalization:** Each `OrderItem` document, nested under a specific `Order` and `Branch`, will explicitly include `branchId` and `userId` (of the cashier who processed the order) from its parent `Order`. This allows security rules for `OrderItem` to independently verify that the requesting user has access to the specified `branchId` and potentially to orders processed by a given `userId`, without needing to fetch the parent `Order` document.\n2.  **Path-Based Authorization Context:** For entities like `Product`, `Category`, `Tax`, `InventoryTransaction`, and `ReceiptConfiguration`, they are structured as subcollections under `/branches/{branchId}`. This automatically embeds the `branchId` into the document's path, making it immediately available in security rules (e.g., `match /branches/{branchId}/products/{productId}`), thus avoiding `get()` calls to a parent `Branch` document to determine access rights.\n3.  **User Profile for Global Roles/Branch Assignment:** While the 'No Custom Claims' mandate prevents adding roles/branch IDs to `request.auth.token`, accessing the user's *own* profile (`/users/$(request.auth.uid)`) to retrieve their `branchId` and `roleId` is an accepted pattern for database-backed access control (DBAC). This `get()` operation is on the `request.auth.uid`'s personal data, not on the target resource's parent, and is a foundational part of user-centric authorization.\n\n### QAPs (Query as Authorization Predicates)\nThe structure enables secure and efficient `list` operations by adhering to structural segregation (Mandate B):\n1.  **Branch-Scoped Data:** Operational data such as `Categories`, `Products`, `Orders`, `OrderItems`, `Taxes`, `InventoryTransactions`, and `ReceiptConfiguration` are organized into subcollections under `/branches/{branchId}`. This means that any `list` query for these entities will inherently be scoped to a specific `branchId`. Security rules can then easily enforce that `request.auth.uid` is associated with the `branchId` in the path (by comparing with the user's `branchId` retrieved from their profile). This implicitly filters results, ensuring only authorized documents are returned, satisfying the QAPs principle.\n2.  **Global Data Segregation:** Entities like `Users`, `Roles`, `Customers`, and `Discounts` are stored in top-level collections. `list` operations on these collections will have security rules that check for global administrative roles (e.g., `/roles/{roleId}`) or specific permissions associated with the `request.auth.uid`'s `roleId`. This segregation ensures a homogeneous security posture for each collection, simplifying rules and ensuring QAPs for global data.\n3.  **Denormalized Fields for `OrderItem`:** The denormalized `branchId` and `userId` in `OrderItem` documents enable robust `list` operations even if direct queries on `orderItems` (e.g., for reporting across multiple orders) are needed. Rules can directly filter on these fields, ensuring only relevant and authorized items are retrieved.\n\n### Multi-Branch Inventory & Product Management\nTo address the multi-branch requirement effectively and provide branch-specific inventory, the `Category` and `Product` entities, while appearing as global in their schema definitions, are implemented as branch-specific subcollections: `/branches/{branchId}/categories/{categoryId}` and `/branches/{branchId}/products/{productId}`. This ensures that `stockQuantity` on the `Product` entity is inherently branch-specific and can be securely managed and accessed by users assigned to that branch. `InventoryTransaction` records then accurately reflect changes to this branch-specific stock."
+  }
+}
