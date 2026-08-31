@@ -476,18 +476,34 @@ export default function BookingsPage() {
     return { room, unitPrice, roomSubtotal, units };
   }, [rooms, roomDatePricing]);
 
-  // Bookings belonging to the same guest stay (same name + phone, still in-house),
-  // so multiple rooms booked by one guest appear in a single bill.
+  // Bookings belonging to the same guest stay (same name + phone) are grouped so that
+  // multiple rooms booked by one guest appear in a single bill/receipt.
+  // Completed bookings are included too, because the receipt is printed from a completed
+  // booking - excluding them made multi-room receipts show only a single room.
   const groupSiblings = useMemo(() => {
     if (!activeBooking) return [];
     const nm = activeBooking.guestName?.trim().toLowerCase();
     const ph = activeBooking.phone?.trim();
     if (!nm || !ph) return [activeBooking];
+
+    const targetStart = parseLocalDate(activeBooking.checkIn);
+    const targetEnd = parseLocalDate(activeBooking.checkOut || activeBooking.checkIn);
+
+    // Only group bookings whose stay overlaps the active booking, so unrelated past
+    // stays by the same guest are not merged into the same bill.
+    const overlaps = (b: Booking) => {
+      if (!targetStart || !targetEnd || isNaN(targetStart.getTime()) || isNaN(targetEnd.getTime())) return true;
+      const bStart = parseLocalDate(b.checkIn);
+      const bEnd = parseLocalDate(b.checkOut || b.checkIn);
+      if (!bStart || !bEnd || isNaN(bStart.getTime()) || isNaN(bEnd.getTime())) return true;
+      return targetStart <= bEnd && targetEnd >= bStart;
+    };
+
     const matching = bookings.filter(b =>
         b.status !== 'cancelled' &&
-        b.status !== 'completed' &&
         b.guestName?.trim().toLowerCase() === nm &&
-        b.phone?.trim() === ph
+        b.phone?.trim() === ph &&
+        overlaps(b)
     );
     return matching.length ? matching : [activeBooking];
   }, [activeBooking, bookings]);
@@ -660,9 +676,12 @@ export default function BookingsPage() {
 
   const handleCompleteCheckout = useCallback((paymentMethod?: string) => {
     if (selectedBookingId && activeBooking) {
-        // Complete every booking in the guest's stay (multiple rooms = one checkout)
+        // Complete every booking in the guest's stay (multiple rooms = one checkout).
+        // Skip siblings already checked out to avoid re-marking their rooms dirty.
         groupSiblings.forEach(b => {
-            if (b.id !== selectedBookingId) updateBookingStatus(b.id, 'completed');
+            if (b.id === selectedBookingId) return;
+            if (b.status === 'completed') return;
+            updateBookingStatus(b.id, 'completed');
             if (b.roomId) updateRoom(b.roomId, { status: 'available', hkStatus: 'dirty' });
         });
         updateBookingStatus(selectedBookingId, 'completed');
