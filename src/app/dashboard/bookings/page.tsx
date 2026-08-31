@@ -749,8 +749,10 @@ export default function BookingsPage() {
                 position: absolute !important;
                 left: 0 !important;
                 top: 0 !important;
+                right: 0 !important;
                 width: 100% !important;
                 max-width: 100% !important;
+                box-sizing: border-box !important;
                 background: white !important;
                 color: #000 !important;
                 margin: 0 !important;
@@ -758,6 +760,10 @@ export default function BookingsPage() {
                 z-index: 999999 !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                -webkit-column-break-inside: avoid !important;
+                overflow: hidden !important;
             }
             .non-printable { visibility: hidden !important; }
         }
