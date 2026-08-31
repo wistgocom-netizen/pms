@@ -476,21 +476,26 @@ export default function BookingsPage() {
     return { room, unitPrice, roomSubtotal, units };
   }, [rooms, roomDatePricing]);
 
-  // Bookings belonging to the same guest stay (same name + phone) are grouped so that
-  // multiple rooms booked by one guest appear in a single bill/receipt.
-  // Completed bookings are included too, because the receipt is printed from a completed
-  // booking - excluding them made multi-room receipts show only a single room.
+  // Bookings belonging to the same guest stay are grouped so that multiple rooms booked
+  // by one guest appear in a single bill/receipt.
+  // - Same guest NAME is the primary key (so grouping survives blank or differently
+  //   formatted phone numbers, which commonly happens when booking several rooms).
+  // - Phone (normalized digits) is strongly preferred when it matches.
+  // - Bookings are only grouped when their stay overlaps, so unrelated past stays by the
+  //   same guest are not merged into one bill.
+  // - Completed bookings are included too (the receipt is printed from a completed booking).
   const groupSiblings = useMemo(() => {
     if (!activeBooking) return [];
     const nm = activeBooking.guestName?.trim().toLowerCase();
-    const ph = activeBooking.phone?.trim();
-    if (!nm || !ph) return [activeBooking];
+    const idp = activeBooking.guestIdPassport?.trim().toLowerCase();
+    if (!nm) return [activeBooking];
+
+    const normPhone = (p?: string) => (p || '').replace(/[^\d]/g, '');
+    const ph = normPhone(activeBooking.phone);
 
     const targetStart = parseLocalDate(activeBooking.checkIn);
     const targetEnd = parseLocalDate(activeBooking.checkOut || activeBooking.checkIn);
 
-    // Only group bookings whose stay overlaps the active booking, so unrelated past
-    // stays by the same guest are not merged into the same bill.
     const overlaps = (b: Booking) => {
       if (!targetStart || !targetEnd || isNaN(targetStart.getTime()) || isNaN(targetEnd.getTime())) return true;
       const bStart = parseLocalDate(b.checkIn);
@@ -499,12 +504,16 @@ export default function BookingsPage() {
       return targetStart <= bEnd && targetEnd >= bStart;
     };
 
-    const matching = bookings.filter(b =>
-        b.status !== 'cancelled' &&
-        b.guestName?.trim().toLowerCase() === nm &&
-        b.phone?.trim() === ph &&
-        overlaps(b)
-    );
+    const matching = bookings.filter(b => {
+      if (b.status === 'cancelled') return false;
+      if (b.guestName?.trim().toLowerCase() !== nm) return false;
+      // Strong link: a non-empty ID/passport matches.
+      if (idp && b.guestIdPassport?.trim().toLowerCase() === idp) return true;
+      // Strong link: phone digits match.
+      if (ph && normPhone(b.phone) === ph) return true;
+      // Fallback for blank/differing phones: same name within an overlapping stay.
+      return overlaps(b);
+    });
     return matching.length ? matching : [activeBooking];
   }, [activeBooking, bookings]);
 
