@@ -756,14 +756,14 @@ export default function BookingsPage() {
                 background: white !important;
                 color: #000 !important;
                 margin: 0 !important;
-                padding: 1rem !important;
+                padding: 0.5rem !important;
                 z-index: 999999 !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
                 -webkit-column-break-inside: avoid !important;
-                overflow: hidden !important;
+                zoom: 0.82 !important;
             }
             .non-printable { visibility: hidden !important; }
         }
@@ -1953,22 +1953,22 @@ export default function BookingsPage() {
           </DialogHeader>
           <div className="flex-grow overflow-y-auto min-h-0 px-6 py-4">
                 {activeBooking && groupBilling && (
-                <div id="hotel-receipt" className="font-mono text-black print-container bg-white mb-4 text-xs" style={{ fontSize: `${Math.round(12 * printFontScale)}px`, border: '3px solid #000', borderRadius: '12px', padding: '1rem' }}>
-                    <div className="text-center mb-6">
+                <div id="hotel-receipt" className="font-mono text-black print-container bg-white mb-4 text-xs" style={{ fontSize: `${Math.round(10 * printFontScale)}px`, border: '3px solid #000', borderRadius: '12px', padding: '0.5rem' }}>
+                    <div className="text-center mb-3">
                         {hotelLogo && (
-                            <div className="flex justify-center mb-3">
+                            <div className="flex justify-center mb-2">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={hotelLogo} alt="Hotel Logo" style={{ maxHeight: `${Math.round(80 * printFontScale) * 1.5}px`, maxWidth: '80%', objectFit: 'contain' }} className="mx-auto" />
+                                <img src={hotelLogo} alt="Hotel Logo" style={{ maxHeight: `${Math.round(50 * printFontScale)}px`, maxWidth: '80%', objectFit: 'contain' }} className="mx-auto" />
                             </div>
                         )}
-                        <h1 className="font-bold uppercase tracking-tighter mb-2" style={{ fontSize: `${Math.round(20 * printFontScale)}px` }}>{storeName}</h1>
-                        <p style={{ fontSize: `${Math.round(10 * printFontScale)}px` }}>{storeAddress}</p>
-                        <p style={{ fontSize: `${Math.round(10 * printFontScale)}px` }}>Tel: {storePhone}</p>
-                        <div className="my-4 py-2" style={{ borderTop: '3px solid #000', borderBottom: '3px solid #000', marginLeft: '-1rem', marginRight: '-1rem', paddingLeft: '1rem', paddingRight: '1rem' }}>
-                            <h2 className="font-bold uppercase" style={{ fontSize: `${Math.round(16 * printFontScale)}px` }}>Proforma Bill</h2>
+                        <h1 className="font-bold uppercase tracking-tighter mb-1" style={{ fontSize: `${Math.round(16 * printFontScale)}px` }}>{storeName}</h1>
+                        <p style={{ fontSize: `${Math.round(8.5 * printFontScale)}px` }}>{storeAddress}</p>
+                        <p style={{ fontSize: `${Math.round(8.5 * printFontScale)}px` }}>Tel: {storePhone}</p>
+                        <div className="my-2 py-1" style={{ borderTop: '3px solid #000', borderBottom: '3px solid #000', marginLeft: '-0.5rem', marginRight: '-0.5rem', paddingLeft: '0.5rem', paddingRight: '0.5rem' }}>
+                            <h2 className="font-bold uppercase" style={{ fontSize: `${Math.round(13 * printFontScale)}px` }}>Proforma Bill</h2>
                         </div>
                     </div>
-                    <div className="grid grid-cols-2 gap-y-1 mb-6" style={{ fontSize: `${Math.round(10 * printFontScale)}px` }}>
+                    <div className="grid grid-cols-2 gap-y-0.5 mb-3" style={{ fontSize: `${Math.round(8.5 * printFontScale)}px` }}>
                         <p className="font-bold">Bill No:</p><p className="text-right">BK-{activeBooking.id.slice(-6).toUpperCase()}</p>
                         <p className="font-bold">Date:</p><p className="text-right">{new Date().toLocaleDateString()}</p>
                         <p className="font-bold">Guest:</p><p className="text-right">{activeBooking.guestName}</p>
@@ -1976,53 +1976,53 @@ export default function BookingsPage() {
                         <p className="font-bold">Stay:</p><p className="text-right">{activeBooking.checkIn} {activeBooking.checkInTime} — {activeBooking.checkOut} {activeBooking.checkOutTime}</p>
                         <p className="font-bold">Units:</p><p className="text-right">{groupBilling.lines.reduce((s, l) => s + l.units, 0)} {activeBooking.stayMode === 'hourly' ? 'Slots' : 'Nights'}</p>
                     </div>
-                    <table className="w-full mb-6 border-collapse" style={{ fontSize: `${Math.round(10 * printFontScale)}px`, marginLeft: '-1rem', marginRight: '-1rem', width: 'calc(100% + 2rem)' }}>
+                    <table className="w-full mb-3 border-collapse" style={{ fontSize: `${Math.round(8.5 * printFontScale)}px`, marginLeft: '-0.5rem', marginRight: '-0.5rem', width: 'calc(100% + 1rem)' }}>
                         <thead className="border-b border-black">
                             <tr>
-                                <th className="text-left py-2 uppercase tracking-tighter">Description</th>
-                                <th className="text-right py-2 uppercase tracking-tighter">Amount</th>
+                                <th className="text-left py-1 uppercase tracking-tighter">Description</th>
+                                <th className="text-right py-1 uppercase tracking-tighter">Amount</th>
                             </tr>
                         </thead>
                         <tbody>
                             {groupBilling.lines.map(l => (
                                 <Fragment key={l.bookingId}>
                                     <tr>
-                                        <td className="py-2">Room {l.roomId} Stay ({l.units} @ {formatCurrency(l.unitPrice)})</td>
-                                        <td className="text-right py-2">{formatCurrency(l.roomSubtotal)}</td>
+                                        <td className="py-1">Room {l.roomId} Stay ({l.units} @ {formatCurrency(l.unitPrice)})</td>
+                                        <td className="text-right py-1">{formatCurrency(l.roomSubtotal)}</td>
                                     </tr>
                                     {l.extras.map(c => (
                                         <tr key={c.id}>
-                                            <td className="py-1 text-black truncate mr-2">• {l.roomId}: {c.description}</td>
-                                            <td className="text-right py-1">{formatCurrency(c.amount)}</td>
+                                            <td className="py-0.5 text-black truncate mr-2">• {l.roomId}: {c.description}</td>
+                                            <td className="text-right py-0.5">{formatCurrency(c.amount)}</td>
                                         </tr>
                                     ))}
                                 </Fragment>
                             ))}
                             {groupBilling.lines.length > 1 && (
                                 <tr style={{ borderTop: '3px solid #000' }}>
-                                    <td className="py-2 font-bold">Combined Room Charges</td>
-                                    <td className="text-right py-2 font-bold">{formatCurrency(groupBilling.roomSubtotal)}</td>
+                                    <td className="py-1 font-bold">Combined Room Charges</td>
+                                    <td className="text-right py-1 font-bold">{formatCurrency(groupBilling.roomSubtotal)}</td>
                                 </tr>
                             )}
                         </tbody>
-                        <tfoot className="border-t border-black font-bold pt-2">
-                            <tr><td className="py-1">Gross Total</td><td className="text-right py-1">{formatCurrency(groupBilling.total)}</td></tr>
-                            <tr className="text-black"><td className="py-1">Less: Advance Paid</td><td className="text-right py-1">-{formatCurrency(groupBilling.advance)}</td></tr>
-                            <tr className="font-black" style={{ fontSize: `${Math.round(16 * printFontScale)}px` }}><td className="py-2">Net Payable</td><td className="text-right py-2">{formatCurrency(groupBilling.balance)}</td></tr>
+                        <tfoot className="border-t border-black font-bold pt-1">
+                            <tr><td className="py-0.5">Gross Total</td><td className="text-right py-0.5">{formatCurrency(groupBilling.total)}</td></tr>
+                            <tr className="text-black"><td className="py-0.5">Less: Advance Paid</td><td className="text-right py-0.5">-{formatCurrency(groupBilling.advance)}</td></tr>
+                            <tr className="font-black" style={{ fontSize: `${Math.round(13 * printFontScale)}px` }}><td className="py-1">Net Payable</td><td className="text-right py-1">{formatCurrency(groupBilling.balance)}</td></tr>
                         </tfoot>
                     </table>
-                    <div className="text-center py-4" style={{ fontSize: `${Math.round(10 * printFontScale)}px` }}>
+                    <div className="text-center py-2" style={{ fontSize: `${Math.round(8.5 * printFontScale)}px` }}>
                         <p className="font-black uppercase tracking-tighter">How was your Experience?</p>
                         <p>Scan the QR Code to leave a review and let us know</p>
                         {reviewQrCode && (
-                            <div className="pt-3">
-                                <p className="font-bold uppercase tracking-widest mb-1">Scan me!</p>
+                            <div className="pt-1">
+                                <p className="font-bold uppercase tracking-widest mb-0.5">Scan me!</p>
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={reviewQrCode} alt="Google Review QR" className="inline-block bg-white" style={{ width: `${Math.round(110 * printFontScale)}px`, height: `${Math.round(110 * printFontScale)}px`, objectFit: 'contain' }} />
+                                <img src={reviewQrCode} alt="Google Review QR" className="inline-block bg-white" style={{ width: `${Math.round(75 * printFontScale)}px`, height: `${Math.round(75 * printFontScale)}px`, objectFit: 'contain' }} />
                             </div>
                         )}
                     </div>
-                    <div className="text-center text-black" style={{ fontSize: `${Math.round(9 * printFontScale)}px`, borderTop: '3px solid #000', paddingTop: '1rem', marginLeft: '-1rem', marginRight: '-1rem', paddingLeft: '1rem', paddingRight: '1rem' }}>
+                    <div className="text-center text-black" style={{ fontSize: `${Math.round(7.5 * printFontScale)}px`, borderTop: '3px solid #000', paddingTop: '0.4rem', marginLeft: '-0.5rem', marginRight: '-0.5rem', paddingLeft: '0.5rem', paddingRight: '0.5rem' }}>
                         <p>This is an interim bill summary.</p>
                     </div>
                 </div>
