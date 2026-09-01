@@ -567,6 +567,11 @@ export default function BookingsPage() {
             lineTotal: calc.roomSubtotal + extrasSubtotal
         };
     });
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[BillGroup] activeBooking', activeBooking?.id, activeBooking?.guestName, activeBooking?.phone, activeBooking?.checkIn, activeBooking?.checkOut);
+      console.log('[BillGroup] groupedSiblingCount', lines.length, lines.map(l => ({id: l.bookingId, room: l.roomId})));
+      console.log('[BillGroup] total bookings with same guest', bookings.filter(b => b.guestName?.trim().toLowerCase() === activeBooking.guestName?.trim().toLowerCase()).map(b => ({id: b.id, room: b.roomId, status: b.status, phone: b.phone, checkIn: b.checkIn, checkOut: b.checkOut})));
+    }
     const roomSubtotal = lines.reduce((s, l) => s + l.roomSubtotal, 0);
     const extrasSubtotal = lines.reduce((s, l) => s + l.extrasSubtotal, 0);
     // Advance is applied once across the whole guest stay.
