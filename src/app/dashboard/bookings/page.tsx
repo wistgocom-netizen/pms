@@ -117,6 +117,7 @@ export default function BookingsPage() {
     addBooking, 
     updateBooking, 
     updateBookingStatus, 
+    removeBooking, 
     updateRoom, 
     addExtraCharge, 
     removeExtraCharge, 
@@ -143,6 +144,7 @@ export default function BookingsPage() {
   const [isPrintOpen, setIsPrintOpen] = useState(false);
   const [isQrOpen, setIsQrOpen] = useState(false);
   const [isStayActionsOpen, setIsStayActionsOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<'cancel' | 'delete' | null>(null);
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
   const [editingBookingId, setEditingBookingId] = useState<string | null>(null);
 
@@ -1800,6 +1802,24 @@ export default function BookingsPage() {
                         <LogOut className="h-5 w-5" /> Checkout Guest
                     </Button>
                 )}
+                {(activeBooking?.status === 'active' || activeBooking?.status === 'upcoming') && (
+                    <Button 
+                        variant="outline" 
+                        size="lg" 
+                        className="h-14 rounded-xl gap-3 font-bold text-sm justify-start text-destructive hover:bg-destructive/10 hover:text-destructive"
+                        onClick={() => setConfirmAction('cancel')}
+                    >
+                        <XCircle className="h-5 w-5" /> Cancel Booking
+                    </Button>
+                )}
+                <Button 
+                    variant="outline" 
+                    size="lg" 
+                    className="h-14 rounded-xl gap-3 font-bold text-sm justify-start text-destructive hover:bg-destructive/10 hover:text-destructive"
+                    onClick={() => setConfirmAction('delete')}
+                >
+                    <Trash2 className="h-5 w-5" /> Delete Booking
+                </Button>
             </div>
             <DialogFooter className="p-4 bg-muted/30">
                 <Button variant="ghost" className="w-full font-bold" onClick={() => setIsStayActionsOpen(false)}>
@@ -1809,6 +1829,42 @@ export default function BookingsPage() {
         </DialogContent>
       </Dialog>
       </div>
+
+      {/* Confirm Cancel / Delete Booking */}
+      <AlertDialog open={confirmAction !== null} onOpenChange={(o) => { if (!o) setConfirmAction(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {confirmAction === 'cancel' ? 'Cancel Booking' : 'Delete Booking'}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmAction === 'cancel'
+                ? `Cancel this reservation${groupSiblings.length > 1 ? ` (${groupSiblings.length} rooms)` : ''}? This cannot be undone.`
+                : `Permanently delete this reservation${groupSiblings.length > 1 ? ` (${groupSiblings.length} rooms)` : ''}? This cannot be undone.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setConfirmAction(null)}>No, keep it</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                const ids = groupSiblings.map(b => b.id);
+                if (confirmAction === 'cancel') {
+                  ids.forEach(id => updateBookingStatus(id, 'cancelled'));
+                  toast({ title: "Booking cancelled", description: `${activeBooking?.guestName}'s reservation was cancelled.` });
+                } else {
+                  ids.forEach(id => removeBooking(id));
+                  toast({ title: "Booking deleted", description: `${activeBooking?.guestName}'s reservation was deleted.` });
+                }
+                setConfirmAction(null);
+                setSelectedBookingId(null);
+                setIsStayActionsOpen(false);
+              }}
+            >
+              Yes, {confirmAction === 'cancel' ? 'cancel' : 'delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Add Extra Charge Dialog */}
       <div className="non-printable">

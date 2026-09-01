@@ -438,6 +438,7 @@ export interface StoreContextType {
   addBooking: (booking: Omit<Booking, 'id' | 'status' | 'totalAmount'>) => void;
   updateBooking: (bookingId: string, booking: Partial<Booking>) => void;
   updateBookingStatus: (bookingId: string, status: BookingStatus) => void;
+  removeBooking: (bookingId: string) => void;
   addExtraCharge: (bookingId: string, charge: Omit<ExtraCharge, 'id' | 'date'>) => void;
   removeExtraCharge: (bookingId: string, chargeId: string) => void;
   addEmployee: (employee: Omit<Employee, 'id' | 'payments'>) => void;

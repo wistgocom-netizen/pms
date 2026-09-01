@@ -672,6 +672,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     }));
   };
 
+  const removeBooking = async (bookingId: string) => {
+    await db.deleteBooking(bookingId);
+    setBookings(prev => prev.filter(b => b.id !== bookingId));
+  };
+
   const addExtraCharge = async (bookingId: string, charge: Omit<ExtraCharge, 'id' | 'date'>) => {
     const newCharge: ExtraCharge = { ...charge, id: generateId('CHG'), date: new Date().toISOString().split('T')[0] };
     await db.addExtraCharge(bookingId, newCharge);
@@ -1330,7 +1335,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       printFontScale, setPrintFontScale, hotelLogo, setHotelLogo, reviewQrCode, setReviewQrCode,
       paymentMethods, cashDenominations,
       registerBarcodeFocusHandler, focusBarcode, updateUserLocation,
-      roomTypes, addRoomType, removeRoomType, addRoom, removeRoom, updateRoom, updateRoomStatus, setRoomDatePrice, clearRoomDatePrice, setBulkRoomDatePrices, roomDatePricing, addBooking, updateBooking, updateBookingStatus, addExtraCharge, removeExtraCharge,
+      roomTypes, addRoomType, removeRoomType, addRoom, removeRoom, updateRoom, updateRoomStatus, setRoomDatePrice, clearRoomDatePrice, setBulkRoomDatePrices, roomDatePricing, addBooking, updateBooking, updateBookingStatus, removeBooking, addExtraCharge, removeExtraCharge,
       addEmployee, updateEmployee, deleteEmployee, addEmployeePayment, addDepartment, updateDepartment, deleteDepartment, addHkTask, updateHkTaskStatus, deleteHkTask, addExpense, updateExpense, deleteExpense, addNote, updateNote, deleteNote, addPricingPlan, updatePricingPlan, deletePricingPlan,
       addProduct, updateProduct, deleteProduct, deleteProducts, addCategory, updateCategory, deleteCategory, addSupplier, updateSupplier, deleteSupplier, deleteSuppliers,
       addSale, addWholesaleSale, saveWholesaleDraft, updateSaleDetails, deleteSale, toggleOrderItemStatus, createNewOrder, addCustomer,
