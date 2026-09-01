@@ -567,11 +567,6 @@ export default function BookingsPage() {
             lineTotal: calc.roomSubtotal + extrasSubtotal
         };
     });
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('[BillGroup] activeBooking', activeBooking?.id, activeBooking?.guestName, activeBooking?.phone, activeBooking?.checkIn, activeBooking?.checkOut);
-      console.log('[BillGroup] groupedSiblingCount', lines.length, lines.map(l => ({id: l.bookingId, room: l.roomId})));
-      console.log('[BillGroup] total bookings with same guest', bookings.filter(b => b.guestName?.trim().toLowerCase() === activeBooking.guestName?.trim().toLowerCase()).map(b => ({id: b.id, room: b.roomId, status: b.status, phone: b.phone, checkIn: b.checkIn, checkOut: b.checkOut})));
-    }
     const roomSubtotal = lines.reduce((s, l) => s + l.roomSubtotal, 0);
     const extrasSubtotal = lines.reduce((s, l) => s + l.extrasSubtotal, 0);
     // Advance is applied once across the whole guest stay.
@@ -2155,6 +2150,19 @@ export default function BookingsPage() {
           <DialogHeader className="p-6 pb-0 shrink-0">
             <DialogTitle>Guest Bill Preview</DialogTitle>
           </DialogHeader>
+          {process.env.NODE_ENV !== 'production' && activeBooking && (
+            <div className="mx-6 mt-2 mb-0 border border-amber-300 bg-amber-50 p-2 rounded-md text-[10px] font-mono text-amber-900 space-y-0.5 overflow-hidden">
+              <p className="font-black uppercase tracking-widest">Diagnostic</p>
+              <p>Selected: <b>{activeBooking.id}</b> ({activeBooking.guestName}, {activeBooking.phone}, {activeBooking.checkIn}→{activeBooking.checkOut})</p>
+              <p>Rooms in this bill: <b>{groupBilling?.lines.length}</b> — {groupBilling?.lines.map(l => l.roomId).join(', ') || 'none'}</p>
+              <p>All bookings with same guest name:
+                {bookings
+                  .filter(b => b.guestName?.trim().toLowerCase() === activeBooking.guestName?.trim().toLowerCase() && b.status !== 'cancelled')
+                  .map(b => ` [${b.id} room ${b.roomId} ${b.status} ph:${b.phone} ${b.checkIn}→${b.checkOut}${groupBilling?.lines.some(l => l.bookingId === b.id) ? ' ✓merged' : ' ✗NOT merged'}]`)
+                  .join('') || ' none'}
+              </p>
+            </div>
+          )}
           <div className="flex-grow overflow-y-auto min-h-0 px-6 py-4">
                 {activeBooking && groupBilling && (
                 <div id="hotel-receipt" className="font-mono text-black print-container bg-white mb-4 text-xs" style={{ fontSize: `${Math.round(10 * printFontScale)}px`, border: '3px solid #000', borderRadius: '12px', padding: '0.5rem' }}>
