@@ -280,10 +280,10 @@ export default function BookingsPage() {
   }, [bookings, editingBookingId]);
 
   const availableRoomsList = useMemo(() => {
-    const baseRooms = rooms.filter(r => r.status !== 'maintenance' || (editingBookingId && r.id === bookings.find(b => b.id === editingBookingId)?.roomId));
+    const baseRooms = rooms.filter(r => r.status !== 'maintenance' || (editingBookingId && editGroupBookingIds.has(bookings.find(b => b.roomId === r.id)?.id || '')));
     if (!newBooking.checkIn) return baseRooms;
     return baseRooms;
-  }, [rooms, bookings, newBooking.checkIn, editingBookingId]);
+  }, [rooms, bookings, newBooking.checkIn, editingBookingId, editGroupBookingIds]);
 
   const roomDateConflict = (roomId: string, skipSelf = false) => {
     if (!newBooking.checkIn) return false;
