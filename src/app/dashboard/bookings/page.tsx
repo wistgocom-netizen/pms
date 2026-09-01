@@ -249,6 +249,36 @@ export default function BookingsPage() {
     }).sort((a, b) => b.id.localeCompare(a.id));
   }, [bookings, rooms, searchTerm, statusFilter, roomTypeFilter, listDateFilter]);
 
+  // IDs of all bookings that belong to the reservation currently being edited
+  // (the primary plus its multi-room siblings sharing the same guest & overlapping stay).
+  const editGroupBookingIds = useMemo(() => {
+    if (!editingBookingId) return new Set<string>();
+    const editing = bookings.find(b => b.id === editingBookingId);
+    if (!editing) return new Set([editingBookingId]);
+    const normPhone = (p?: string) => (p || '').replace(/[^\d]/g, '');
+    const nm = editing.guestName?.trim().toLowerCase();
+    if (!nm) return new Set([editingBookingId]);
+    const ph = normPhone(editing.phone);
+    const idp = editing.guestIdPassport?.trim().toLowerCase();
+    const targetStart = parseLocalDate(editing.checkIn);
+    const targetEnd = parseLocalDate(editing.checkOut || editing.checkIn);
+    const overlaps = (b: Booking) => {
+      if (!targetStart || !targetEnd || isNaN(targetStart.getTime()) || isNaN(targetEnd.getTime())) return true;
+      const bStart = parseLocalDate(b.checkIn);
+      const bEnd = parseLocalDate(b.checkOut || b.checkIn);
+      if (!bStart || !bEnd || isNaN(bStart.getTime()) || isNaN(bEnd.getTime())) return true;
+      return targetStart <= bEnd && targetEnd >= bStart;
+    };
+    const group = bookings.filter(b => {
+      if (b.status === 'cancelled') return false;
+      if (b.guestName?.trim().toLowerCase() !== nm) return false;
+      if (idp && b.guestIdPassport?.trim().toLowerCase() === idp) return true;
+      if (ph && normPhone(b.phone) === ph) return true;
+      return overlaps(b);
+    });
+    return new Set((group.length ? group : [editing]).map(b => b.id));
+  }, [bookings, editingBookingId]);
+
   const availableRoomsList = useMemo(() => {
     const baseRooms = rooms.filter(r => r.status !== 'maintenance' || (editingBookingId && r.id === bookings.find(b => b.id === editingBookingId)?.roomId));
     if (!newBooking.checkIn) return baseRooms;
@@ -518,36 +548,6 @@ export default function BookingsPage() {
     });
     return matching.length ? matching : [activeBooking];
   }, [activeBooking, bookings]);
-
-  // IDs of all bookings that belong to the reservation currently being edited
-  // (the primary plus its multi-room siblings sharing the same guest & overlapping stay).
-  const editGroupBookingIds = useMemo(() => {
-    if (!editingBookingId) return new Set<string>();
-    const editing = bookings.find(b => b.id === editingBookingId);
-    if (!editing) return new Set([editingBookingId]);
-    const nm = editing.guestName?.trim().toLowerCase();
-    if (!nm) return new Set([editingBookingId]);
-    const normPhone = (p?: string) => (p || '').replace(/[^\d]/g, '');
-    const ph = normPhone(editing.phone);
-    const idp = editing.guestIdPassport?.trim().toLowerCase();
-    const targetStart = parseLocalDate(editing.checkIn);
-    const targetEnd = parseLocalDate(editing.checkOut || editing.checkIn);
-    const overlaps = (b: Booking) => {
-      if (!targetStart || !targetEnd || isNaN(targetStart.getTime()) || isNaN(targetEnd.getTime())) return true;
-      const bStart = parseLocalDate(b.checkIn);
-      const bEnd = parseLocalDate(b.checkOut || b.checkIn);
-      if (!bStart || !bEnd || isNaN(bStart.getTime()) || isNaN(bEnd.getTime())) return true;
-      return targetStart <= bEnd && targetEnd >= bStart;
-    };
-    const group = bookings.filter(b => {
-      if (b.status === 'cancelled') return false;
-      if (b.guestName?.trim().toLowerCase() !== nm) return false;
-      if (idp && b.guestIdPassport?.trim().toLowerCase() === idp) return true;
-      if (ph && normPhone(b.phone) === ph) return true;
-      return overlaps(b);
-    });
-    return new Set((group.length ? group : [editing]).map(b => b.id));
-  }, [bookings, editingBookingId]);
 
   const groupBilling = useMemo(() => {
     if (!activeBooking) return null;
@@ -828,9 +828,12 @@ export default function BookingsPage() {
     const el = document.getElementById('hotel-receipt');
     if (!el) { window.print(); return; }
     const prevZoom = el.style.zoom;
+    const prevWidth = el.style.width;
     el.style.zoom = '1';
+    el.style.width = '760px';
     const contentH = el.getBoundingClientRect().height;
-    const targetH = 1080;
+    el.style.width = prevWidth;
+    const targetH = 980;
     const scale = contentH > targetH ? targetH / contentH : 1;
     el.style.zoom = String(Math.max(0.35, scale));
     requestAnimationFrame(() => {
