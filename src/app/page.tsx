@@ -417,7 +417,7 @@ export default function HomePage() {
   
   const faqs = [
     { question: "Is Adyfire (PMS) suitable for boutique hotels?", answer: "Absolutely. Our platform is designed to scale from small guest houses to large boutique hotels, offering flexible room management and custom pricing." },
-    { question: "Can I try the PMS for free first?", answer: "Yes! We offer a 7-day free trial of our Pro plan. You can set up your rooms, add staff, and process bookings immediately with no credit card required." },
+    { question: "Can I try the PMS for free first?", answer: "Yes! Create an account and start using Adyfire right away. You can set up your rooms, add staff, and process bookings immediately with no credit card required." },
     { question: "How safe is my property and guest data?", answer: "We use bank-grade encryption and regular security audits. Your data is stored securely in the cloud with automated daily backups." },
     { question: "Does it support thermal receipt printing for check-outs?", answer: "Yes, Adyfire supports standard thermal printers (80mm and 58mm) as well as A4 professional invoices for business guests." },
     { question: "Can I manage housekeeping tasks through the app?", answer: "Yes, we have a dedicated Housekeeping module where staff can see their assigned rooms and update cleaning status in real-time." },
@@ -633,7 +633,7 @@ export default function HomePage() {
                     <p className="mt-2 max-w-xl mx-auto opacity-80 text-lg">Join forward-thinking property owners who have streamlined their operations with Adyfire (PMS).</p>
                     <div className="mt-8 flex flex-wrap justify-center gap-4">
                         <Button size="lg" variant="secondary" className="px-8" asChild>
-                           <Link href="/signup">Launch Free Trial</Link>
+                           <Link href="/signup">Get Started Free</Link>
                         </Button>
                         <Button size="lg" variant="outline" className="bg-white/10 border-white/20 hover:bg-white/20 px-8" asChild>
                            <Link href="/contact">Talk to Sales</Link>

@@ -48,11 +48,8 @@ export default function ProductsPage() {
   const [isImportDialogOpen, setIsImportDialogOpen] = useState(false);
 
   const productLimit = useMemo(() => {
-    if (userProfile?.role === 'super-admin') return 999;
-    const planName = organization?.subscriptionPlan || 'Basic';
-    const plan = pricingPlans.find(p => p.name.toLowerCase() === planName.toLowerCase());
-    return plan?.products || 50;
-  }, [organization, pricingPlans, userProfile]);
+    return 999999;
+  }, []);
 
   const isLimitReached = products.length >= productLimit;
 

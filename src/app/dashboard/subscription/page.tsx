@@ -146,7 +146,7 @@ export default function SubscriptionPage() {
               <div>
                 <CardTitle className="flex items-center gap-2">
                   {t('Current Plan')}
-                  {organization.subscriptionStatus === 'paid' ? (
+                  {organization.subscriptionStatus === 'paid' || organization.subscriptionStatus === 'trial' ? (
                     <Badge variant="success" className="uppercase text-[10px]">{t('Active')}</Badge>
                   ) : (
                     <Badge variant="destructive" className="uppercase text-[10px]">{t(organization.subscriptionStatus || 'unpaid')}</Badge>
@@ -194,7 +194,7 @@ export default function SubscriptionPage() {
                 </div>
               )}
             </CardContent>
-            {organization?.subscriptionStatus !== 'paid' && (
+            {organization?.subscriptionStatus !== 'paid' && organization?.subscriptionStatus !== 'trial' && (
                 <CardFooter className="pt-6 border-t bg-destructive/5 rounded-b-lg">
                     <div className="flex justify-between items-center w-full">
                         <p className="text-sm text-destructive font-medium">{t('Your subscription has expired or is pending payment.')}</p>
@@ -205,11 +205,11 @@ export default function SubscriptionPage() {
                     </div>
                 </CardFooter>
             )}
-            {organization?.subscriptionStatus === 'paid' && (
+            {(organization?.subscriptionStatus === 'paid' || organization?.subscriptionStatus === 'trial') && (
                 <CardFooter className="pt-6 border-t bg-green-50/50 dark:bg-green-950/20 rounded-b-lg">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <CalendarClock className="h-4 w-4 text-green-600" />
-                        <span>{t('Your {plan} plan is active until {date}.', { plan: organization.subscriptionPlan || 'Basic', date: expireDate || '...' })}</span>
+                        <span>{t('Your {plan} plan is active.', { plan: organization.subscriptionPlan || 'Basic' })}</span>
                     </div>
                 </CardFooter>
             )}

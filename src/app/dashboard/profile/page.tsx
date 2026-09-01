@@ -174,7 +174,7 @@ export default function ProfilePage() {
               <div className="p-4 rounded-lg bg-muted/50 flex flex-col justify-center">
                   <p className="text-sm font-medium text-muted-foreground">{t('Status')}</p>
                   <div className="mt-1">
-                    <Badge variant={organization?.subscriptionStatus === 'paid' ? 'success' : 'destructive'} className="text-base">{t(organization?.subscriptionStatus || 'n/a')}</Badge>
+                    <Badge variant={organization?.subscriptionStatus === 'paid' || organization?.subscriptionStatus === 'trial' ? 'success' : 'destructive'} className="text-base">{t(organization?.subscriptionStatus || 'n/a')}</Badge>
                   </div>
               </div>
               <div className="p-4 rounded-lg bg-muted/50 flex flex-col justify-center">

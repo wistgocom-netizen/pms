@@ -26,11 +26,11 @@ const defaultPlans: PricingPlan[] = [
     priceMonthly: 1500,
     priceYearly: 16200,
     yearlyDiscount: 10,
-    durationDays: 7,
-    features: ['Up to 10 Rooms', 'Basic Reporting', 'Email Support', 'Manual Check-ins'],
+    durationDays: 365,
+    features: ['Unlimited Rooms', 'Unlimited Products', 'Basic Reporting', 'Email Support', 'Manual Check-ins'],
     isPopular: false,
-    rooms: 10,
-    products: 10
+    rooms: 999999,
+    products: 999999
   },
   {
     id: 'plan-pro',
@@ -39,11 +39,11 @@ const defaultPlans: PricingPlan[] = [
     priceMonthly: 3500,
     priceYearly: 37800,
     yearlyDiscount: 10,
-    durationDays: 7,
-    features: ['Up to 50 Rooms', 'Advanced Reporting', 'Priority Support', 'Hourly/Slot Bookings', 'Housekeeping Dashboard'],
+    durationDays: 365,
+    features: ['Unlimited Rooms', 'Unlimited Products', 'Advanced Reporting', 'Priority Support', 'Hourly/Slot Bookings', 'Housekeeping Dashboard'],
     isPopular: true,
-    rooms: 50,
-    products: 50
+    rooms: 999999,
+    products: 999999
   },
   {
     id: 'plan-business',
@@ -52,11 +52,11 @@ const defaultPlans: PricingPlan[] = [
     priceMonthly: 7500,
     priceYearly: 81000,
     yearlyDiscount: 10,
-    durationDays: 7,
-    features: ['Unlimited Rooms', 'Custom Pricing Tiers', 'Payroll Management', 'Multi-Property Support', 'API Access'],
+    durationDays: 365,
+    features: ['Unlimited Rooms', 'Unlimited Products', 'Custom Pricing Tiers', 'Payroll Management', 'Multi-Property Support', 'API Access'],
     isPopular: false,
-    rooms: 999,
-    products: 999
+    rooms: 999999,
+    products: 999999
   }
 ];
 
@@ -1182,7 +1182,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const newOrg: Organization = {
       id: orgId, name: data.storeName, ownerUid: userProfile.uid,
       subscriptionPlan: data.subscriptionPlan, subscriptionStatus: 'paid',
-      subscriptionEndDate: new Date(Date.now() + 30 * 86400000).toISOString(), billingCycle: 'monthly',
+      subscriptionEndDate: new Date(Date.now() + 3650 * 86400000).toISOString(), billingCycle: 'monthly',
     };
     const newUser: UserProfile = {
       id: userId, uid: userId, email: data.email,
@@ -1222,9 +1222,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     const orgId = generateOrgId();
     const newOrg: Organization = {
       id: orgId, name: data.storeName, ownerUid: userProfile.uid,
-      subscriptionPlan: organization?.subscriptionPlan || 'trial',
-      subscriptionStatus: organization?.subscriptionStatus || 'trial',
-      subscriptionEndDate: organization?.subscriptionEndDate,
+      subscriptionPlan: organization?.subscriptionPlan || 'Pro',
+      subscriptionStatus: organization?.subscriptionStatus || 'paid',
+      subscriptionEndDate: organization?.subscriptionEndDate || new Date(Date.now() + 3650 * 86400000).toISOString(),
       billingCycle: organization?.billingCycle || 'monthly',
     };
     await db.addOrganization(newOrg);
@@ -1297,8 +1297,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     };
     const newOrg: Organization = {
       id: orgId, name: `${data.firstName}'s Property`, ownerUid: uid,
-      subscriptionPlan: 'Pro', subscriptionStatus: 'trial',
-      subscriptionEndDate: new Date(Date.now() + 7 * 86400000).toISOString(), billingCycle: 'monthly',
+      subscriptionPlan: 'Pro', subscriptionStatus: 'paid',
+      subscriptionEndDate: new Date(Date.now() + 3650 * 86400000).toISOString(), billingCycle: 'monthly',
     };
     await db.addOrganization(newOrg);
     await db.addUser(newUser);

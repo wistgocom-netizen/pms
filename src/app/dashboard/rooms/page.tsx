@@ -79,11 +79,8 @@ export default function RoomsPage() {
   }, []);
 
   const roomLimit = useMemo(() => {
-    if (userProfile?.role === 'super-admin') return 999;
-    const planName = organization?.subscriptionPlan || 'Basic';
-    const plan = pricingPlans.find(p => p.name.toLowerCase() === planName.toLowerCase());
-    return plan?.rooms || 10;
-  }, [organization, pricingPlans, userProfile]);
+    return 999999;
+  }, []);
 
   const isLimitReached = rooms.length >= roomLimit;
 

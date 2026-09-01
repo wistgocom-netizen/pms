@@ -16,7 +16,7 @@ export default function TermsPage() {
     {
       title: "2. Subscription & SaaS Billing",
       icon: Clock,
-      content: "Adyfire operates on a subscription-as-a-service model. Plans are billed in advance (Monthly or Yearly). While we offer a 7-day free trial for new properties, subsequent billing is final. Late payments may result in restricted access to the dashboard until the balance is cleared via the supported bank transfer methods."
+      content: "Adyfire operates on a subscription-as-a-service model. Plans are billed in advance (Monthly or Yearly). Create an account and use the application immediately with no trial period. Late payments may result in restricted access to the dashboard until the balance is cleared via the supported bank transfer methods."
     },
     {
       title: "3. Property Data & Guest Privacy",

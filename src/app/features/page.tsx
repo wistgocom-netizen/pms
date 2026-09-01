@@ -144,13 +144,13 @@ export default function FeaturesPage() {
         <div className="bg-muted/30 rounded-3xl p-8 md:p-16 text-center max-w-5xl mx-auto">
           <h2 className="text-3xl font-bold font-headline mb-4">Ready to streamline your property?</h2>
           <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Experience these features first-hand with our 7-day free trial of the Pro plan. 
+            Experience these features first-hand by creating a free account.
             No complex setup required—get started in minutes.
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Button size="lg" asChild>
               <Link href="/signup">
-                Start Free Trial <ChevronRight className="ml-2 h-4 w-4" />
+                Get Started Free <ChevronRight className="ml-2 h-4 w-4" />
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild>
