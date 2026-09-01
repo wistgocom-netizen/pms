@@ -848,15 +848,15 @@ export default function BookingsPage() {
     <div className="space-y-6">
       <style dangerouslySetInnerHTML={{ __html: `
         @media print {
-            @page { size: auto; margin: 0; }
-            html, body { margin: 0 !important; padding: 0 !important; background: white !important; height: auto !important; overflow: visible !important; }
+            @page { margin: 0; }
+            html, body { margin: 0 !important; padding: 0 !important; background: white !important; }
             body * { visibility: hidden !important; }
             #hotel-receipt, #hotel-receipt * { visibility: visible !important; }
             #hotel-receipt {
                 display: block !important;
-                position: absolute !important;
-                left: 0 !important;
+                position: fixed !important;
                 top: 0 !important;
+                left: 0 !important;
                 right: 0 !important;
                 width: 100% !important;
                 max-width: 100% !important;
@@ -872,7 +872,7 @@ export default function BookingsPage() {
                 break-inside: avoid !important;
                 -webkit-column-break-inside: avoid !important;
             }
-            .non-printable { visibility: hidden !important; }
+            .non-printable { visibility: hidden !important; display: none !important; }
         }
       `}} />
 
