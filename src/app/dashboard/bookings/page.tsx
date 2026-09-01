@@ -535,6 +535,11 @@ export default function BookingsPage() {
       if (!bStart || !bEnd || isNaN(bStart.getTime()) || isNaN(bEnd.getTime())) return true;
       return targetStart <= bEnd && targetEnd >= bStart;
     };
+    // Same guest booking multiple rooms for the same arrival OR departure night belongs to one bill,
+    // even when visit dates differ slightly (e.g. check in room A today, room B tomorrow).
+    const sameReservationNight = (b: Booking) => {
+      return (b.checkIn && b.checkIn === activeBooking.checkIn) || (b.checkOut && b.checkOut === activeBooking.checkOut);
+    };
 
     const matching = bookings.filter(b => {
       if (b.status === 'cancelled') return false;
@@ -543,6 +548,8 @@ export default function BookingsPage() {
       if (idp && b.guestIdPassport?.trim().toLowerCase() === idp) return true;
       // Strong link: phone digits match.
       if (ph && normPhone(b.phone) === ph) return true;
+      // Same arrival/departure night => clearly the same multi-room reservation.
+      if (sameReservationNight(b)) return true;
       // Fallback for blank/differing phones: same name within an overlapping stay.
       return overlaps(b);
     });
