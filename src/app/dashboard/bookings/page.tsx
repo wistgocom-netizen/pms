@@ -263,7 +263,7 @@ export default function BookingsPage() {
     return bookings.some(b => {
         if (b.status === 'cancelled' || b.status === 'completed') return false;
         if (b.roomId !== roomId) return false;
-        if (skipSelf && editingBookingId && b.id === editingBookingId) return false;
+        if (skipSelf && editingBookingId && editGroupBookingIds.has(b.id)) return false;
 
         const bStart = parseLocalDate(b.checkIn)!;
         const bEnd = parseLocalDate(b.checkOut || b.checkIn)!;
@@ -288,7 +288,7 @@ export default function BookingsPage() {
     return bookings.filter(b => {
         if (b.status === 'cancelled' || b.status === 'completed') return false;
         if (!selected.includes(b.roomId)) return false;
-        if (editingBookingId && b.id === editingBookingId) return false;
+        if (editingBookingId && editGroupBookingIds.has(b.id)) return false;
 
         const bStart = parseLocalDate(b.checkIn)!;
         const bEnd = parseLocalDate(b.checkOut || b.checkIn)!;
@@ -312,7 +312,7 @@ export default function BookingsPage() {
         }
         return false;
     });
-  }, [bookings, newBooking, editingBookingId]);
+  }, [bookings, newBooking, editingBookingId, editGroupBookingIds]);
 
   const selectedRoomIds = useMemo(() => {
     return newBooking.selectedRoomIds?.length ? newBooking.selectedRoomIds : ([newBooking.roomId].filter(Boolean) as string[]);
@@ -328,10 +328,10 @@ export default function BookingsPage() {
             b.stayMode === 'hourly' &&
             b.status !== 'cancelled' &&
             b.status !== 'completed' &&
-            (!editingBookingId || b.id !== editingBookingId)
+            (!editingBookingId || !editGroupBookingIds.has(b.id))
         )
         .map(b => b.timeRange);
-  }, [bookings, selectedRoomIds, newBooking, editingBookingId]);
+  }, [bookings, selectedRoomIds, newBooking, editingBookingId, editGroupBookingIds]);
 
   const availableHoursFrom = useMemo(() => {
     const ids = selectedRoomIds;
@@ -519,6 +519,36 @@ export default function BookingsPage() {
     return matching.length ? matching : [activeBooking];
   }, [activeBooking, bookings]);
 
+  // IDs of all bookings that belong to the reservation currently being edited
+  // (the primary plus its multi-room siblings sharing the same guest & overlapping stay).
+  const editGroupBookingIds = useMemo(() => {
+    if (!editingBookingId) return new Set<string>();
+    const editing = bookings.find(b => b.id === editingBookingId);
+    if (!editing) return new Set([editingBookingId]);
+    const nm = editing.guestName?.trim().toLowerCase();
+    if (!nm) return new Set([editingBookingId]);
+    const normPhone = (p?: string) => (p || '').replace(/[^\d]/g, '');
+    const ph = normPhone(editing.phone);
+    const idp = editing.guestIdPassport?.trim().toLowerCase();
+    const targetStart = parseLocalDate(editing.checkIn);
+    const targetEnd = parseLocalDate(editing.checkOut || editing.checkIn);
+    const overlaps = (b: Booking) => {
+      if (!targetStart || !targetEnd || isNaN(targetStart.getTime()) || isNaN(targetEnd.getTime())) return true;
+      const bStart = parseLocalDate(b.checkIn);
+      const bEnd = parseLocalDate(b.checkOut || b.checkIn);
+      if (!bStart || !bEnd || isNaN(bStart.getTime()) || isNaN(bEnd.getTime())) return true;
+      return targetStart <= bEnd && targetEnd >= bStart;
+    };
+    const group = bookings.filter(b => {
+      if (b.status === 'cancelled') return false;
+      if (b.guestName?.trim().toLowerCase() !== nm) return false;
+      if (idp && b.guestIdPassport?.trim().toLowerCase() === idp) return true;
+      if (ph && normPhone(b.phone) === ph) return true;
+      return overlaps(b);
+    });
+    return new Set((group.length ? group : [editing]).map(b => b.id));
+  }, [bookings, editingBookingId]);
+
   const groupBilling = useMemo(() => {
     if (!activeBooking) return null;
     const lines = groupSiblings.map(b => {
@@ -566,7 +596,30 @@ export default function BookingsPage() {
       };
 
       if (editingBookingId) {
-          updateBooking(editingBookingId, sanitizedBooking as any);
+          const wantedRoomIds = newBooking.selectedRoomIds?.length ? newBooking.selectedRoomIds : (newBooking.roomId ? [newBooking.roomId] : []);
+          const groupBookings = bookings.filter(b => editGroupBookingIds.has(b.id));
+          const groupByRoom = new Map(groupBookings.map(b => [b.roomId, b]));
+
+          for (const roomId of wantedRoomIds) {
+              const existing = groupByRoom.get(roomId);
+              const sel = newBooking.roomSelections?.[roomId];
+              const roomData = {
+                  ...sanitizedBooking,
+                  roomId,
+                  pricingTierId: sel?.pricingTierId || newBooking.pricingTierId || 'default',
+                  bookingType: sel?.bookingType || newBooking.bookingType || 'Per Day',
+              };
+              if (existing) {
+                  updateBooking(existing.id, roomData as any);
+              } else {
+                  addBooking(roomData as any);
+              }
+          }
+          for (const g of groupBookings) {
+              if (!wantedRoomIds.includes(g.roomId)) {
+                  removeBooking(g.id);
+              }
+          }
       } else {
           const roomIds = newBooking.selectedRoomIds?.length ? newBooking.selectedRoomIds : [newBooking.roomId].filter(Boolean);
           for (const roomId of roomIds) {
@@ -590,14 +643,49 @@ export default function BookingsPage() {
   const handleOpenEdit = (booking: Booking) => {
       setEditingBookingId(booking.id);
 
+      // Gather all rooms belonging to this reservation group (multi-room siblings).
+      const normPhone = (p?: string) => (p || '').replace(/[^\d]/g, '');
+      const nm = booking.guestName?.trim().toLowerCase();
+      const ph = normPhone(booking.phone);
+      const idp = booking.guestIdPassport?.trim().toLowerCase();
+      const tStart = parseLocalDate(booking.checkIn);
+      const tEnd = parseLocalDate(booking.checkOut || booking.checkIn);
+      const overlaps = (b: Booking) => {
+        if (!tStart || !tEnd || isNaN(tStart.getTime()) || isNaN(tEnd.getTime())) return true;
+        const bs = parseLocalDate(b.checkIn);
+        const be = parseLocalDate(b.checkOut || b.checkIn);
+        if (!bs || !be || isNaN(bs.getTime()) || isNaN(be.getTime())) return true;
+        return tStart <= be && tEnd >= bs;
+      };
+      let group = [booking];
+      if (nm) {
+        const matches = bookings.filter(b => {
+          if (b.status === 'cancelled') return false;
+          if (b.guestName?.trim().toLowerCase() !== nm) return false;
+          if (idp && b.guestIdPassport?.trim().toLowerCase() === idp) return true;
+          if (ph && normPhone(b.phone) === ph) return true;
+          return overlaps(b);
+        });
+        if (matches.length) group = matches;
+      }
+
+      const roomIds: string[] = [];
+      const selections: Record<string, { pricingTierId: string; bookingType: string }> = {};
+      group.forEach(g => {
+        if (g.roomId && !roomIds.includes(g.roomId)) roomIds.push(g.roomId);
+        if (g.roomId) selections[g.roomId] = { pricingTierId: g.pricingTierId || 'default', bookingType: g.bookingType || '' };
+      });
+      if (roomIds.length === 0) roomIds.push(booking.roomId);
+      const primary = roomIds[0];
+
       const times = (booking.timeRange || "").split(" - ");
       setFromTime(times[0] || "");
       setToTime(times[1] || "");
 
       setNewBooking({
-          roomId: booking.roomId,
-          selectedRoomIds: [booking.roomId],
-          roomSelections: { [booking.roomId]: { pricingTierId: booking.pricingTierId || 'default', bookingType: booking.bookingType || '' } },
+          roomId: primary,
+          selectedRoomIds: roomIds,
+          roomSelections: selections,
           guestName: booking.guestName,
           guestIdPassport: booking.guestIdPassport || '',
           phone: booking.phone,
@@ -608,8 +696,8 @@ export default function BookingsPage() {
           checkOutTime: booking.checkOutTime || '12:00 PM',
           guests: booking.guests,
           advance: booking.advance,
-          bookingType: booking.bookingType || '',
-          pricingTierId: booking.pricingTierId || 'default',
+          bookingType: selections[primary]?.bookingType || booking.bookingType || '',
+          pricingTierId: selections[primary]?.pricingTierId || booking.pricingTierId || 'default',
           stayMode: booking.stayMode || 'daily',
           durationUnits: booking.durationUnits || 1,
           timeRange: booking.timeRange || '',
