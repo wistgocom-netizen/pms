@@ -28,6 +28,16 @@ export default function DynamicPricingPage() {
   const [bulkPrice, setBulkPrice] = useState('');
   const [editingCell, setEditingCell] = useState<{ roomId: string; date: string } | null>(null);
   const [editPrice, setEditPrice] = useState('');
+  const [selectedPricingTierId, setSelectedPricingTierId] = useState<string | null>(null);
+  const [editPricingTierId, setEditPricingTierId] = useState<string | null>(null);
+
+  const [selectedCells, setSelectedCells2] = useState<Set<string>>(new Set());
+  const [isBulkDialogOpen, setIsBulkDialogOpen2] = useState(false);
+  const [bulkPrice, setBulkPrice2] = useState('');
+  const [editingCell, setEditingCell2] = useState<{ roomId: string; date: string } | null>(null);
+  const [editPrice, setEditPrice2] = useState('');
+  const [selectedPricingTierId2, setSelectedPricingTierId2] = useState<string | null>(null);
+  const [editPricingTierId2, setEditPricingTierId2] = useState<string | null>(null);
 
   const daysInMonth = useMemo(() => {
     const start = startOfMonth(currentMonth);
@@ -230,43 +240,43 @@ export default function DynamicPricingPage() {
                         <p className="text-[9px] text-muted-foreground font-mono">Base: {formatCurrency(room.price)}</p>
                       </div>
                     </div>
-
-                    {/* Date Cells */}
-                    {daysInMonth.map(day => {
-                      const dateStr = format(day, 'yyyy-MM-dd');
-                      const isOverridden = roomDatePricing?.[room.id]?.[dateStr] !== undefined;
-                      const effectivePrice = getEffectivePrice(room.id, day);
-                      const isSelected = isCellSelected(room.id, dateStr);
-
-                      return (
-                        <div
-                          key={dateStr}
-                          className={cn(
-                            "p-1.5 text-center border-l border-b border-muted/20 cursor-pointer transition-colors relative group",
-                            isToday(day) && "bg-primary/5",
-                            isSelected && "bg-green-100 dark:bg-green-950/30 ring-1 ring-green-500/50",
-                            isOverridden && "bg-amber-50 dark:bg-amber-950/20",
-                            editingCell?.roomId === room.id && editingCell?.date === dateStr && "ring-2 ring-primary z-10"
-                          )}
-                          onClick={() => handleCellClick(room.id, day)}
-                          onDoubleClick={() => handleCellDoubleClick(room.id, day)}
-                        >
-                          <p className={cn(
-                            "text-[9px] font-medium",
-                            isToday(day) && "text-primary font-bold"
-                          )}>
-                            {format(day, 'd')}
-                          </p>
-                          <p className={cn(
-                            "text-[10px] font-black",
-                            isOverridden ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"
-                          )}>
-                            {formatCurrency(effectivePrice)}
-                          </p>
-                        </div>
-                      );
-                    })}
                   </div>
+
+                  {/* Date Cells */}
+                  {daysInMonth.map(day => {
+                    const dateStr = format(day, 'yyyy-MM-dd');
+                    const isOverridden = roomDatePricing?.[room.id]?.[dateStr] !== undefined;
+                    const effectivePrice = getEffectivePrice(room.id, day);
+                    const isSelected = isCellSelected(room.id, dateStr);
+
+                    return (
+                      <div
+                        key={dateStr}
+                        className={cn(
+                          "p-1.5 text-center border-l border-b border-muted/20 cursor-pointer transition-colors relative group",
+                          isToday(day) && "bg-primary/5",
+                          isSelected && "bg-green-100 dark:bg-green-950/30 ring-1 ring-green-500/50",
+                          isOverridden && "bg-amber-50 dark:bg-amber-950/20",
+                          editingCell?.roomId === room.id && editingCell?.date === dateStr && "ring-2 ring-primary z-10"
+                        )}
+                        onClick={() => handleCellClick(room.id, day)}
+                        onDoubleClick={() => handleCellDoubleClick(room.id, day)}
+                      >
+                        <p className={cn(
+                          "text-[9px] font-medium",
+                          isToday(day) && "text-primary font-bold"
+                        })>
+                          {format(day, 'd')}
+                        </p>
+                        <p className={cn(
+                          "text-[10px] font-black",
+                          isOverridden ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground"
+                        )}>
+                          {formatCurrency(effectivePrice)}
+                        </p>
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })}
