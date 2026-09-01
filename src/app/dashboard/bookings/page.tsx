@@ -734,6 +734,21 @@ export default function BookingsPage() {
   };
   const handleJumpToToday = () => setCalendarStartDate(startOfDay(new Date()));
 
+  const handlePrintReceipt = () => {
+    const el = document.getElementById('hotel-receipt');
+    if (!el) { window.print(); return; }
+    const prevZoom = el.style.zoom;
+    el.style.zoom = '1';
+    const contentH = el.getBoundingClientRect().height;
+    const targetH = 1080;
+    const scale = contentH > targetH ? targetH / contentH : 1;
+    el.style.zoom = String(Math.max(0.35, scale));
+    requestAnimationFrame(() => {
+      window.print();
+      el.style.zoom = prevZoom || '1';
+    });
+  };
+
   if (!mounted || isLoading) return null;
 
   return (
@@ -763,7 +778,6 @@ export default function BookingsPage() {
                 page-break-inside: avoid !important;
                 break-inside: avoid !important;
                 -webkit-column-break-inside: avoid !important;
-                zoom: 0.82 !important;
             }
             .non-printable { visibility: hidden !important; }
         }
@@ -1092,28 +1106,66 @@ export default function BookingsPage() {
                                     <Input placeholder="John Doe" className="h-9" value={newBooking.guestName} onChange={e => setNewBooking({...newBooking, guestName: e.target.value})} />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-xs">Pricing Tier {selectedRoomIds.length > 1 && <span className="text-muted-foreground">(applies to all selected rooms)</span>}</Label>
-                                    <Select value={newBooking.pricingTierId || 'default'} onValueChange={v => {
-                                        const room = selectedRoomForBooking;
-                                        const tier = room?.pricingTiers?.find(t => t.id === v);
-                                        const nextSelections = { ...(newBooking.roomSelections || {}) };
-                                        selectedRoomIds.forEach(id => {
-                                            nextSelections[id] = { pricingTierId: v, bookingType: tier?.label || 'Per Day' };
-                                        });
-                                        setNewBooking({
-                                            ...newBooking,
-                                            pricingTierId: v,
-                                            bookingType: tier?.label || 'Per Day',
-                                            roomSelections: nextSelections
-                                        });
-                                    }}>
-                                        <SelectTrigger className="h-9 text-[11px]"><SelectValue /></SelectTrigger>
-                                        <SelectContent>
-                                            {(selectedRoomForBooking?.pricingTiers?.length ? selectedRoomForBooking.pricingTiers : [{ id: 'default', label: 'Default', price: selectedRoomForBooking?.price || 0 }]).map(t => (
-                                                <SelectItem key={t.id} value={t.id} className="text-xs">{t.label} — {formatCurrency(t.price)}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                    <Label className="text-xs">Pricing Tier{selectedRoomIds.length > 1 ? <span className="text-muted-foreground"> (per room)</span> : ""}</Label>
+                                    {selectedRoomIds.length <= 1 ? (
+                                        <Select value={newBooking.pricingTierId || 'default'} onValueChange={v => {
+                                            const room = selectedRoomForBooking;
+                                            const tier = room?.pricingTiers?.find(t => t.id === v);
+                                            const nextSelections = { ...(newBooking.roomSelections || {}) };
+                                            selectedRoomIds.forEach(id => {
+                                                nextSelections[id] = { pricingTierId: v, bookingType: tier?.label || 'Per Day' };
+                                            });
+                                            setNewBooking({
+                                                ...newBooking,
+                                                pricingTierId: v,
+                                                bookingType: tier?.label || 'Per Day',
+                                                roomSelections: nextSelections
+                                            });
+                                        }}>
+                                            <SelectTrigger className="h-9 text-[11px]"><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                {(selectedRoomForBooking?.pricingTiers?.length ? selectedRoomForBooking.pricingTiers : [{ id: 'default', label: 'Default', price: selectedRoomForBooking?.price || 0 }]).map(t => (
+                                                    <SelectItem key={t.id} value={t.id} className="text-xs">{t.label} — {formatCurrency(t.price)}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            {selectedRoomIds.map(rid => {
+                                                const room = rooms.find(r => r.id === rid);
+                                                const sel = newBooking.roomSelections?.[rid];
+                                                const selTierId = sel?.pricingTierId || 'default';
+                                                const tiers = (room && room.pricingTiers && room.pricingTiers.length) ? room.pricingTiers : (room ? [{ id: 'default', label: 'Default', price: room.price || 0 }] : []);
+                                                return (
+                                                    <div key={rid} className="flex items-center gap-2">
+                                                        <span className="font-black text-xs w-14 shrink-0">{rid}</span>
+                                                        <Select value={selTierId} onValueChange={v => {
+                                                            const tier = room?.pricingTiers?.find(t => t.id === v);
+                                                            const bookingType = tier?.label || sel?.bookingType || 'Per Day';
+                                                            setNewBooking(prev => {
+                                                                const selections = { ...(prev.roomSelections || {}), [rid]: { pricingTierId: v, bookingType } };
+                                                                const primary = prev.selectedRoomIds?.[0] || rid;
+                                                                const primarySel = selections[primary];
+                                                                return {
+                                                                    ...prev,
+                                                                    roomSelections: selections,
+                                                                    pricingTierId: primarySel?.pricingTierId || v,
+                                                                    bookingType: primarySel?.bookingType || bookingType
+                                                                };
+                                                            });
+                                                        }}>
+                                                            <SelectTrigger className="h-9 text-[11px] flex-1"><SelectValue /></SelectTrigger>
+                                                            <SelectContent>
+                                                                {tiers.map(t => (
+                                                                    <SelectItem key={t.id} value={t.id} className="text-xs">{t.label} — {formatCurrency(t.price)}</SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="space-y-2">
                                     <Label className="text-xs">ID / Passport No.</Label>
@@ -2030,7 +2082,7 @@ export default function BookingsPage() {
           </div>
           <DialogFooter className="p-6 border-t bg-muted/10 flex flex-row gap-2 shrink-0">
             <Button variant="outline" className="flex-1" onClick={() => setIsPrintOpen(false)}>Close</Button>
-            <Button className="flex-1" onClick={() => window.print()}>
+            <Button className="flex-1" onClick={handlePrintReceipt}>
               <Printer className="mr-2 h-4 w-4" /> Print
             </Button>
           </DialogFooter>
