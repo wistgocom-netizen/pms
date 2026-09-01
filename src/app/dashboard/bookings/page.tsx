@@ -543,11 +543,13 @@ export default function BookingsPage() {
 
     const matching = bookings.filter(b => {
       if (b.status === 'cancelled') return false;
-      if (b.guestName?.trim().toLowerCase() !== nm) return false;
-      // Strong link: a non-empty ID/passport matches.
-      if (idp && b.guestIdPassport?.trim().toLowerCase() === idp) return true;
-      // Strong link: phone digits match.
+      const hasSameName = b.guestName?.trim().toLowerCase() === nm;
+      // Definite strong link regardless of name spelling: matching ID/passport.
+      if (idp && b.guestIdPassport?.trim().toLowerCase() === idp && hasSameName) return true;
+      // Strong link: phone digits match (same guest dialled in for each room).
       if (ph && normPhone(b.phone) === ph) return true;
+      // Name-based links below require the guest name to match.
+      if (!hasSameName) return false;
       // Same arrival/departure night => clearly the same multi-room reservation.
       if (sameReservationNight(b)) return true;
       // Fallback for blank/differing phones: same name within an overlapping stay.
