@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { currencies } from '@/lib/currencies';
+import { db } from '@/lib/db';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function SettingsPage() {
@@ -78,11 +79,48 @@ export default function SettingsPage() {
     }
   };
 
-  const handleSave = () => {
-    toast({
-      title: "Settings Saved",
-      description: "Your configurations have been updated successfully.",
-    });
+  const handleSave = async () => {
+    const { 
+      storeName, setStoreName, 
+      storeAddress, setStoreAddress, 
+      storePhone, setStorePhone, 
+      storeEmail, setStoreEmail,
+      currency, setCurrency, 
+      taxRate, setTaxRate,
+      theme, setTheme,
+      zoom, setZoom,
+      autoPrintReceipt, setAutoPrintReceipt,
+      printFontScale, setPrintFontScale,
+      hotelLogo, setHotelLogo,
+      reviewQrCode, setReviewQrCode,
+      userProfile
+    } = useStore();
+
+    if (!userProfile?.organizationId) {
+      toast({
+        title: "Error",
+        description: "No organization found. Please sign in again.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await db.upsertSettings(userProfile.organizationId, {
+        storeName, storeAddress, storePhone, storeEmail, currency,
+        taxRate, theme, zoom, autoPrintReceipt, printFontScale, hotelLogo, reviewQrCode
+      });
+      toast({
+        title: "Settings Saved",
+        description: "Your configurations have been updated successfully.",
+      });
+    } catch (err: any) {
+      toast({
+        title: "Failed",
+        description: err?.message || "Could not save settings.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
